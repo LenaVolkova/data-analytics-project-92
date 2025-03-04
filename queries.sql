@@ -1,7 +1,9 @@
+-- step 4
 -- count all the customers
 select count(*) as customers_count
 from customers;
 
+-- step 5
 -- shows to 10 sellers
 select 
 	CONCAT(employees.first_name, ' ',  employees.last_name) as seller,
@@ -57,3 +59,44 @@ sales_by_day as (
 )
 select seller, day_of_week, income
 from sales_by_day;
+
+-- step 6
+-- customers age groups
+select 
+	case
+		when age between 16 and 25 then '16-25'
+		when age between 26 and 40 then '26-40'
+		when age > 40 then '40+'
+	end as age_category,
+	count(*) as age_count
+from customers
+group by age_category
+order by age_category;
+
+-- sales by month
+select
+	to_char(sales.sale_date, 'YYYY-MM') as selling_month,
+	count(distinct sales.customer_id) as total_customers,
+	floor(sum(sales.quantity * products.price)) as income
+from sales
+join products on sales.product_id = products.product_id
+group by selling_month;
+
+-- first sale if it was done during speccial offer period (with zero price)
+with first_sale as (
+	select
+		distinct customer_id,
+		first_value(sales_person_id) over (partition by customer_id order by sale_date) as sales_person,
+		first_value(product_id) over (partition by customer_id order by sale_date) as product,
+		first_value(sale_date) over (partition by customer_id order by sale_date) as first_sale_date
+	from sales
+)
+select
+	CONCAT(customers.first_name, ' ',  customers.last_name) as customer,
+	first_sale_date as sale_date,
+	CONCAT(employees.first_name, ' ',  employees.last_name) as seller
+from first_sale
+join employees on first_sale.sales_person = employees.employee_id
+join customers on first_sale.customer_id = customers.customer_id
+join products on first_sale.product = products.product_id
+where products.price = 0;
