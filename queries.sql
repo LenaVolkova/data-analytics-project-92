@@ -42,7 +42,7 @@ order by average_income;
 with sales_by_date as (
 	select 
 		CONCAT(employees.first_name, ' ',  employees.last_name) as seller,
-		to_char(sales.sale_date, 'FMDay') as day_of_week,
+		to_char(sales.sale_date, 'fmday') as day_of_week,
 		extract(isodow from sales.sale_date) as day_number,
 		sum(sales.quantity * products.price) as income
 	from employees
