@@ -90,6 +90,7 @@ with first_sale as (
 		first_value(product_id) over (partition by customer_id order by sale_date) as product,
 		first_value(sale_date) over (partition by customer_id order by sale_date) as first_sale_date
 	from sales
+	order by customer_id
 )
 select
 	CONCAT(customers.first_name, ' ',  customers.last_name) as customer,
